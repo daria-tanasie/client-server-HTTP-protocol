@@ -1,0 +1,69 @@
+    Am folosit biblioteca parson.c.
+
+    In fisierul client.c:
+    Setam rutele de acces pt toate comenzile pe care le avem de implementat si
+initializam variabilele.
+    Intr o bucla de while(1) vom incepe sa citim comenzi si sa vedem ce avem de
+facut in continuare.
+
+    Daca avem comanda register: 
+    Citim de la tastatura userul si parola, iar apoi verificam ca numele sa nu
+aiba spatiu, iar daca nu este valid, dam mesaj de eroare si continuam. In caz
+contrar, vom construi acum un obiect de tip json pentru a l trimte catre server.
+Acesta contine userul si parola. Am construit obiectul cu ajutorul bibliotecii
+parson.c, creand intai o valoare (json_value_init_object()), un obiect
+(json_value_get_object()), setand fieldurile necesare(json_object_set_string()
+pentru fiecare field) si apoi l am transformat intr un pretty string (json_serialize_to_string_pretty()).
+Dupa ce avem obiectul, il vom trimite catre server cu ajutorul functiei
+compute_post_request() preluata din lab, formand un mesaj. Deschidem apoi cu
+ajutorul functiei open_connection() un socket catre server, iar apoi trimitem
+mesajul. Primim apoi un raspuns de la server, iar daca in acest mesaj se afla o
+eroare o vom afisa la stdout, parsand o inainte. Daca n am primit eroare, vom
+printa mesaj de succes. La final eliberam memoria pt obiectul json (json_free_serialized_string() si json_value_free()) si inchidem conexiunea.
+
+    Daca avem comanda de login:
+    Citim userul si parola de la tastatura si verificam ca userul sa fie valid.
+Daca nu este, dam mesaj de eroare si continueam. In caz ca este valid, vom
+face exact aceleasi lucruri ca la comanda register, insa daca nu primim eroare
+de la server, va trebui sa memoram si cookieul primim, parsandu l din raspuns
+dupa "connect.sid", iar apoi afisam success si cookieul.
+
+    Daca avem comanda enter_library:
+    Verificam ca userul sa fie logat, iar daca nu este, dam mesaj si continuam.
+Trimitem apoi mesaj de tip GET la server si primim un raspuns. Daca avem eroare
+vom afisa eroarea, iar daca nu vom prelua token ul din raspuns, parsand raspunsul,
+si afisam success.
+    
+    Daca avem comanda de get_books:
+    Verificam intai sa avem acces la librarie, iar daca nu avem => eroare si continuam.
+Daca avem acces, trimitem mesaj de GET catre server, primim raspuns si vedem ce fel de
+raspuns am primit. In caz de eroare o afisam, iar daca este succes, vom retine cartile
+intr un vector de stringuri, parsand raspunsul pentru a le gasi. Afisam apoi cartile.
+
+    Daca avem comanda add_book:
+    Verificam sa avem acces la librarie. Daca avem, citim de la tastatura titlul, autorul,
+genul, publisherul, si nr de pagini de la tastatura. Verificam apoi ca aceste fielduri
+sa fie valide (sa nu fie goale si fieldul cu nr de pagini sa fie un nr), iar apoi
+construim un obiect json, exact ca la register, si trimitem mesaj de POST catre server.
+Primim apoi un raspuns si verificam daca este eroare, iar in caz ca nu este dam mesaj de
+succes.
+
+    Daca avem comanda delete_book:
+    Verificam sa ne aflam in librarie, iar daca nu => eroare si continuam. In caz ca nu 
+avem eroare, vom citi id ul cartii care se doreste a fi stearsa. Construim apoi ruta catre
+cartea care tb stearsa, punand la finalul rutei pentru operatii cu carti id ul cartii.
+Trimitem apoi mesaj de DELETE catre server, iar apoi primim raspuns. Daca este eroare,
+o afisam, iar in caz contrar, dam mesaj de succes.
+
+    Daca avem comanda de get_book:
+    La fel ca la delete_book, vom construi ruta, trimitem mesaj de GET acum, iar apoi
+primim un raspuns. Daca este de eroare, o afisam, iar altfel vom prelua din raspuns
+cartea prrimita si o afisam.
+
+    Daca avem comanda de logout:
+    Daca nu suntem logati, primim eroare. In caz contrar, dam mesaj de GET catre server, iar
+apoi primim un raspuns, daca este eroare o afisam, iar in caz contrar, printam succes si vom
+seta variabilele de logged_in si in_library pe 0, iesind din librarie odata cu log out.
+
+    Daca avem comanda de exit:
+    Pur si simplu vom termina de rulat programul.
